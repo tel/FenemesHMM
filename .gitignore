@@ -11,3 +11,5 @@ images
 *.csv
 build/
 *.tmp
+.do_built
+.do_build.dir
