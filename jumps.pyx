@@ -1,15 +1,18 @@
 import numpy as np
 cimport numpy as np
+cimport cython
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def jump_matrices(baseform, fenomes):
     cdef:
         Py_ssize_t nfene, nt, nb, nlbl
         Py_ssize_t it = 0
         Py_ssize_t ib = 0
-        Py_ssize_t s, j
-        np.ndarray[np.float64_t, ndim=1] ptrans, pnull
+        Py_ssize_t s, t, j
+        np.ndarray[np.float64_t, ndim=1] ptrans, pnull, ftrans
         np.ndarray[np.int_t, ndim=2] strans, snull
-        np.ndarray[np.float64_t, ndim=2] qemiss
+        np.ndarray[np.float64_t, ndim=2] qemiss, femiss
 
     nfene = len(baseform)
     nt = 18 + 2*nfene
@@ -29,23 +32,25 @@ def jump_matrices(baseform, fenomes):
         s = 6 + t
 
         fene = fenomes[baseform[t]]
+        femiss = fene.e
+        ftrans = fene.t
         # Insert the emission densities
         for j in range(nlbl):
-            qemiss[it  , j] = fene.e[0, j]
-            qemiss[it+1, j] = fene.e[1, j]
+            qemiss[it  , j] = femiss[0, j]
+            qemiss[it+1, j] = femiss[1, j]
 
         # Insert the self transition
-        ptrans[it   ] = fene.t[1]
+        ptrans[it   ] = ftrans[1]
         strans[it, 0] = s
         strans[it, 1] = s
 
         # Insert the stepping transition
-        ptrans[it+1   ] = fenomes[baseform[t]].t[0]
+        ptrans[it+1   ] = ftrans[0]
         strans[it+1, 0] = s
         strans[it+1, 1] = s+1
 
         # Insert the null transition
-        pnull[ib   ] = fenomes[baseform[t]].t[2]
+        pnull[ib   ] = ftrans[2]
         snull[ib, 0] = s
         snull[ib, 1] = s+1
 
