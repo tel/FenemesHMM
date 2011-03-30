@@ -48,7 +48,7 @@ def train(np.ndarray[Py_ssize_t, ndim=1] baseform, fenomes, instances):
         alphas[0, 0] = 1
         As[0] = 1
 
-        for t in range(1, nobs):
+        for t in range(1, nobs+1):
             total = 0
             o = inst[t-1]
             # Real transitions
@@ -58,9 +58,9 @@ def train(np.ndarray[Py_ssize_t, ndim=1] baseform, fenomes, instances):
                 alphas[strans[j, 1], t] += acc
             # Null transitions
             for j in range(nb):
-                acc = alphas[strans[j, 0], t] * pnull[j]
+                acc = alphas[snull[j, 0], t] * pnull[j]
                 total += acc
-                alphas[strans[j, 1], t] += acc
+                alphas[snull[j, 1], t] += acc
             # Renormalization
             As[t] = total
             for s in range(ns):
