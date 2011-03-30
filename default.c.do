@@ -1,3 +1,3 @@
 redo-ifchange $1.pyx
 
-cython $1.pyx -o $3
+cython -a $1.pyx -o $3
