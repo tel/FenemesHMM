@@ -13,3 +13,5 @@ build/
 *.tmp
 .do_built
 .do_build.dir
+*.o
+
