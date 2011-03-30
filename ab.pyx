@@ -72,5 +72,20 @@ def train(np.ndarray[Py_ssize_t, ndim=1] baseform, fenomes, instances):
         betas[:, nobs] = 1/<np.float64_t>ns
         Bs[nobs] = 1
                     
-
-    #return counts, alphas, betas
+        for t from nobs > t >= 0:
+            total = 0
+            o = inst[t]
+            # Real transtions
+            for j from nt > j >= 0:
+                acc = betas[strans[j, 1], t+1] * ptrans[j] * qemiss[j, o]
+                total += acc
+                betas[strans[j, 0], t] += acc
+            # Null transitions
+            for j from nb > j >= 0:
+                acc = betas[snull[j, 1], t] * pnull[j]
+                total += acc
+                betas[snull[j, 0], t] += acc
+            # Renormalization
+            Bs[t] = total
+            for s in range(ns):
+                betas[s, t] /= Bs[t]
