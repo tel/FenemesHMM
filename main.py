@@ -35,5 +35,5 @@ def make_fenomes(data):
     fenomes.append(Silence(nlbls))
     return fenomes
 
-d = data.Data(alphabetic_baseforms = True)
+d = data.Data(alphabetic_baseforms = False)
 fenomes = make_fenomes(d)

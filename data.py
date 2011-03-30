@@ -12,7 +12,7 @@ class Data:
 
         # A collection of (<word>, <instance>, <endpts>) triples, the training data
         self.instances = [ (word[:-5], 
-                            map(lambda x: self.label_id[x], instance.split()),
+                            np.asarray(map(lambda x: self.label_id[x], instance.split())),
                             map(int, endpts.split()))
                 for word, instance, endpts in zip(open(path + 'trnscr').readlines()[1:],
                                                   open(path + 'trnlbls').readlines()[1:],
@@ -28,7 +28,7 @@ class Data:
                 self.observations[word].append(obs)
             else:
                 self.observations[word] = [obs]
-        self.observations = map(lambda word: np.asarray(self.observations[word]), self.vocab)
+        self.observations = map(lambda word: self.observations[word], self.vocab)
 
         # Using the list of instances, build some baseforms. These use a new set of feneme indices.
         if not alphabetic_baseforms:
@@ -55,7 +55,7 @@ def default_baseforms(vocab, instances):
                     lastlbl = lbl
             baseforms[word] = bf
     # Sort by the vocab list so we can just use indices
-    return map(lambda word: baseforms[word], vocab), maxlbl+1
+    return map(lambda word: np.asarray(baseforms[word]), vocab), maxlbl+1
 
 def alphabet_baseforms(vocab):
     """ Alphabet baseforms are generated from the spelling of the vocabulary
@@ -75,5 +75,5 @@ def alphabet_baseforms(vocab):
             if idx != lastfeneme:
                 bf.append(idx)
                 lastfeneme = idx
-        out.append(bf)
+        out.append(np.asarray(bf))
     return out, len(alphabet)

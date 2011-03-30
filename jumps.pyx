@@ -2,19 +2,21 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
+ctypedef np.float64_t DTYPE_t
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def jump_matrices(baseform, fenomes):
+def jump_matrices(np.ndarray[Py_ssize_t, ndim=1] baseform, fenomes):
     cdef:
         Py_ssize_t nfene, nt, nb, nlbl
         Py_ssize_t it = 0
         Py_ssize_t ib = 0
         Py_ssize_t s, t, j
-        np.ndarray[np.float64_t, ndim=1] ptrans, pnull, ftrans
+        np.ndarray[DTYPE_t, ndim=1] ptrans, pnull, ftrans
         np.ndarray[np.int_t, ndim=2] strans, snull
-        np.ndarray[np.float64_t, ndim=2] qemiss, femiss
+        np.ndarray[DTYPE_t, ndim=2] qemiss, femiss
 
-    nfene = len(baseform)
+    nfene = baseform.shape[0]
     nt = 18 + 2*nfene
     nb = 6 + nfene
     nlbl = fenomes[0].e.shape[1]
