@@ -1,0 +1,13 @@
+*.pdf
+*.swp
+*.swo
+*.pyc
+*.html
+*.so
+images
+*.png
+*.DS_Store
+*.c
+*.csv
+build/
+*.tmp
