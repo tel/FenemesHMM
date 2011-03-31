@@ -174,15 +174,17 @@ def train(fenomes, baseforms, observations):
         total = 0
         for k in range(nlbl):
             total += qnet[j, k]
-        for k in range(nlbl):
-            qnet[j, k] /= total
+        if total != 0:
+            for k in range(nlbl):
+                qnet[j, k] /= total
 
     for j in range(qnet_sil.shape[0]):
         total = 0
         for k in range(nlbl):
             total += qnet_sil[j, k]
-        for k in range(nlbl):
-            qnet_sil[j, k] /= total
+        if total != 0:
+            for k in range(nlbl):
+                qnet_sil[j, k] /= total
 
     arrownet = np.c_[np.reshape(tnet, [nfene_total, 2]),
                         np.reshape(bnet, [nfene_total, 1])]
@@ -190,7 +192,27 @@ def train(fenomes, baseforms, observations):
         total = 0
         for k in range(3):
             total += arrownet[j, k]
-        for k in range(3):
-            arrownet[j, k] /= total
+        if total != 0:
+            for k in range(3):
+                arrownet[j, k] /= total
+
+    acc = tnet_sil[0] + tnet_sil[5]
+    tnet_sil[0] /= acc
+    tnet_sil[5] /= acc
+    acc = tnet_sil[1] + tnet_sil[2]
+    tnet_sil[1] /= acc
+    tnet_sil[2] /= acc
+    acc = tnet_sil[3] + tnet_sil[4]
+    tnet_sil[3] /= acc
+    tnet_sil[4] /= acc
+    acc = tnet_sil[6] + bnet_sil[0]
+    tnet_sil[6] /= acc
+    bnet_sil[0] /= acc
+    acc = tnet_sil[7] + bnet_sil[1]
+    tnet_sil[7] /= acc
+    bnet_sil[1] /= acc
+    acc = tnet_sil[8] + bnet_sil[2]
+    tnet_sil[8] /= acc
+    bnet_sil[2] /= acc
 
     return Pv, qnet, arrownet, qnet_sil, tnet_sil, bnet_sil
