@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 
 import data
+import ab
 
 class HMM(object):
     slots = ['t', 'e']
@@ -12,7 +13,7 @@ class Fenome(HMM):
         if focal_sym is None:
             pert = np.sqrt(np.random.random([2, noutputs]))
             pert = np.transpose(np.transpose(pert) / np.sum(pert, 1))
-            self.e = (np.ones([2, noutputs])/(noutputs)+pert)/2
+            self.e = (np.ones([2, noutputs])/(noutputs)+pert*3)/4
         else:
             self.e = np.ones([2, noutputs])/(2*(noutputs-1))
             self.e[:, focal_sym] = 0.5
@@ -35,5 +36,15 @@ def make_fenomes(data):
     fenomes.append(Silence(nlbls))
     return fenomes
 
-d = data.Data(alphabetic_baseforms = False)
-fenomes = make_fenomes(d)
+def iterate(fenomes, data):
+    p, qnet, tnet, qnet_sil, tnet_sil, bnet_sil = \
+            ab.train(fenomes, data.baseforms, data.observations)
+
+    for i in xrange(len(fenomes)-1):
+        fenomes[i].e = qnet[2*i:(2*i+1), :]
+        fenomes[i].t = tnet[i, :]
+    fenomes[-1].e = qnet_sil
+    fenomes[-1].t[0:9] = tnet_sil
+    fenomes[-1].t[9:12] = bnet_sil
+
+    return p, fenomes
