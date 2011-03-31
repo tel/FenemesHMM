@@ -18,6 +18,10 @@ class Data:
                                                   open(path + 'trnlbls').readlines()[1:],
                                                   open(path + 'endpts').readlines()[1:]) ]
 
+        # A collection of testing data
+        self.test_instances = [ np.asarray(map(lambda x: self.label_id[x], instance.split()))
+                    for instance in open(path + 'tstlbls').readlines()[1:] ]
+
         # Prepare the recognized vocabulary
         self.vocab = list(set(map(lambda x: x[0], self.instances)))
 

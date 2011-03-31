@@ -132,7 +132,7 @@ def train(fenomes, baseforms, observations):
                     z *= As[t]/Bs[t]
                     o = inst[t]
                     acc = alphas[strans[j, 0], t] * betas[strans[j, 1], t+1] \
-                            * ptrans[j] * qemiss[j, o]
+                            * ptrans[j] * qemiss[j, o] * z
                     tcount[j] += acc
                     qcount[j, o] += acc
             for j in range(nb):
@@ -140,9 +140,9 @@ def train(fenomes, baseforms, observations):
                 for t in range(nobs):
                     z *= As[t]/Bs[t]
                     bcount[j] += alphas[snull[j, 0], t] * betas[snull[j, 1], t] \
-                           * pnull[j] * Bs[t]
+                           * pnull[j] * Bs[t] * z
 
-            #Image.fromarray(np.uint8(255*np.isnan(qnet))).save(
+            #Image.fromarray(np.uint8(255*(qnet))).save(
                     #'exp/emiss{idx}_{i}.png'.format( idx = idx, i = i))
             #Image.fromarray(np.uint8(255*(np.r_[alphas, betas]/np.max(alphas)))).save(
                     #'exp/ab{idx}_{i}.png'.format( idx = idx, i = i))
@@ -216,3 +216,79 @@ def train(fenomes, baseforms, observations):
     bnet_sil[2] /= acc
 
     return Pv, qnet, arrownet, qnet_sil, tnet_sil, bnet_sil
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def forwards(fenomes, bf, instances):
+    cdef:
+        np.ndarray[DTYPE_t, ndim=2] alphas
+        np.ndarray[DTYPE_t, ndim=1] As
+        np.ndarray[DTYPE_t, ndim=1] Pv
+
+        np.ndarray[Py_ssize_t, ndim=1] inst
+
+        np.ndarray[np.float64_t, ndim=1] ptrans, pnull
+        np.ndarray[np.int_t, ndim=2] strans, snull
+        np.ndarray[np.float64_t, ndim=2] qemiss
+
+        Py_ssize_t idx, i, j, k, s, t, o, fe
+        Py_ssize_t ns, nt, nb, nlbl, nfene, nfene_total
+
+        np.float64_t acc, total, z
+        Py_ssize_t nobs, nvoc, ninst
+
+    # A constant throughout the entire process
+    nlbl = fenomes[0].e.shape[1]
+    nfene_total = len(fenomes)
+    ninst = len(instances)
+
+    Pv = np.zeros([ninst])
+
+    # Build the net baseform HMM model
+    ptrans, pnull, strans, snull, qemiss = \
+            jumps.jump_matrices(bf, fenomes)
+    nfene = bf.shape[0]
+    ns = 2*6 + nfene + 1
+    nt = ptrans.shape[0]
+    nb = pnull.shape[0]
+
+    # Begin rolling through the instances
+    for i in range(ninst):
+        inst = instances[i]
+        nobs = inst.shape[0]
+    
+        # Begin computing the alphas
+        alphas = np.zeros([ns, nobs+1])
+        As     = np.zeros([nobs+1])
+        alphas[0, 0] = 1
+        As[0] = 1
+
+        for t in range(1, nobs+1):
+            total = 0
+            o = inst[t-1]
+            # Real transitions
+            for j in range(nt):
+                acc = alphas[strans[j, 0], t-1] * ptrans[j] * qemiss[j, o]
+                total += acc
+                alphas[strans[j, 1], t] += acc
+            # Null transitions
+            for j in range(nb):
+                acc = alphas[snull[j, 0], t] * pnull[j]
+                total += acc
+                alphas[snull[j, 1], t] += acc
+            # Renormalization
+            As[t] = total
+            for s in range(ns):
+                if As[t] != 0:
+                    alphas[s, t] /= As[t]
+                    
+        #Image.fromarray(np.uint8(255*(alphas))).save(
+                #'exp/ab{i}.png'.format(i = i))
+
+        # Save this forward probability
+        if np.any(As == 0):
+            Pv[i] = -np.inf
+        else:
+            Pv[i] = np.sum(np.log(As))
+
+    return Pv

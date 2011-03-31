@@ -13,7 +13,7 @@ class Fenome(HMM):
         if focal_sym is None:
             pert = np.sqrt(np.random.random([2, noutputs]))
             pert = np.transpose(np.transpose(pert) / np.sum(pert, 1))
-            self.e = (np.ones([2, noutputs])/(noutputs)+pert*3)/4
+            self.e = (np.ones([2, noutputs])/(noutputs)*3+pert*1)/4
         else:
             self.e = np.ones([2, noutputs])/(2*(noutputs-1))
             self.e[:, focal_sym] = 0.5
@@ -46,5 +46,12 @@ def iterate(fenomes, data):
     fenomes[-1].e = qnet_sil
     fenomes[-1].t[0:9] = tnet_sil
     fenomes[-1].t[9:12] = bnet_sil
+
+    # Flatten the silence model slightly
+    a = 1e-20   
+    fenomes[i].e = (fenomes[i].e + 
+            np.ones(fenomes[i].e.shape)/np.prod(fenomes[i].e.shape))/(1+a)
+    fenomes[i].t = (fenomes[i].t + 
+            np.ones(fenomes[i].t.shape)/np.prod(fenomes[i].t.shape))/(1+a)
 
     return p, fenomes
