@@ -99,7 +99,6 @@ def train(fenomes, baseforms, observations):
                     alphas[s, t] /= As[t]
 
             # Save this forward probability
-            print As
             Pv[idx*ninst + i] = np.mean(np.log(As))
 
             # Begin computing the betas
