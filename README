@@ -1,0 +1,59 @@
+
+Fenomic Acoustic Model
+
+Joseph Abrahamson, 2011
+<tel@jhu.edu>
+
+
+----
+
+
+The system has been tested to run on Mac OS X and Ubuntu 10. It is written in
+Python and Cython and requires the following libraries to run
+
+numpy >= 1.6.0
+cython >= 0.14.1
+
+Building requires gcc and assumes some things about the way your Python
+distribution was compiled. The defaults will probably work and have been
+tested on both source-compiled Pythons and package managed ones through
+apt-get on Ubuntu.
+
+TO BUILD
+--------
+Run
+
+    sh ./build/do
+
+in a reasonable shell, or
+
+    redo all
+
+if djb redo is installed.
+
+
+TO RUN
+------
+
+Run
+
+    ./test.py
+
+and it will train the acoustically matched model and output the best decodes
+of the test instances along with its confidence. To change to the alphabetic
+model, edit line 13 of the file test.py and change
+
+    d = data.Data(alphabetic_baseforms = False)
+
+to
+
+    d = data.Data(alphabetic_baseforms = True)
+
+then rerun ./test.py
+
+Additionally, if you want to poke around in the outputs of the function, it's
+possible to run the test file from within python as
+
+    python -i test.py
+
+making the global variables available.
